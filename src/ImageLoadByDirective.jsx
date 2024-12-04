@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Container, Row, Col, Button, Spinner } from "react-bootstrap";
+import { Container, Spinner } from "react-bootstrap";
 
 const ImageLoadByDirective = () => {
   const [folders, setFolders] = useState([]);
@@ -23,123 +23,145 @@ const ImageLoadByDirective = () => {
     fetchFolders();
   }, []);
 
-  if (loading) {
-    return (
-      <Container className="text-center mt-5">
-        <Spinner animation="border" />
-        <p>Loading...</p>
-      </Container>
-    );
-  }
-
-  if (!folders.length) {
-    return (
-      <Container className="text-center mt-5">
-        <p>No folders found</p>
-      </Container>
-    );
-  }
-
-  const currentFolder = folders[currentFolderIndex];
-  const hasImages = currentFolder.images.length > 0;
-  const currentImage = hasImages
-    ? currentFolder.images[currentImageIndex]
-    : null;
-
   const handleNextImage = () => {
-    if (currentImageIndex < currentFolder.images.length - 1) {
-      setCurrentImageIndex(currentImageIndex + 1);
+    if (folders[currentFolderIndex]?.images?.length) {
+      setCurrentImageIndex((prev) =>
+        prev < folders[currentFolderIndex].images.length - 1 ? prev + 1 : prev
+      );
     }
   };
 
   const handlePreviousImage = () => {
-    if (currentImageIndex > 0) {
-      setCurrentImageIndex(currentImageIndex - 1);
+    if (folders[currentFolderIndex]?.images?.length) {
+      setCurrentImageIndex((prev) => (prev > 0 ? prev - 1 : prev));
     }
   };
 
   const handleNextFolder = () => {
-    if (currentFolderIndex < folders.length - 1) {
-      setCurrentFolderIndex(currentFolderIndex + 1);
-      setCurrentImageIndex(0);
-    }
+    setCurrentFolderIndex((prev) =>
+      prev < folders.length - 1 ? prev + 1 : prev
+    );
+    setCurrentImageIndex(0);
   };
 
   const handlePreviousFolder = () => {
-    if (currentFolderIndex > 0) {
-      setCurrentFolderIndex(currentFolderIndex - 1);
-      setCurrentImageIndex(0);
-    }
+    setCurrentFolderIndex((prev) => (prev > 0 ? prev - 1 : prev));
+    setCurrentImageIndex(0);
   };
+
+  const currentFolder = folders[currentFolderIndex] || {};
+  const currentImage =
+    currentFolder.images?.[currentImageIndex] ||
+    "No image available";
 
   return (
     <Container className="text-center mt-5">
-      <Row>
-        <Col>
-          <h1>Totem Navigation</h1>
-        </Col>
-      </Row>
-      <Row>
-        <Col xs={3}>
-          <Button
-            variant="primary"
+      <h6>Totem Navigation</h6>
+      {loading ? (
+        <Spinner animation="border" />
+      ) : (
+        <div
+          className="image-container"
+          style={{
+            position: "relative",
+            width: "250px",
+            height: "500px",
+            margin: "0 auto",
+            border: "1px solid #ddd",
+            background: "#f9f9f9",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          {/* Previous Folder (↑) */}
+          <div
             onClick={handlePreviousFolder}
-            disabled={currentFolderIndex === 0}
+            style={{
+              position: "absolute",
+              top: "10px",
+              left: "50%",
+              transform: "translateX(-50%)",
+              cursor: "pointer",
+              color: "#333",
+              fontSize: "24px",
+              fontWeight: "bold",
+              userSelect: "none",
+            }}
           >
-            ↑ Previous Folder
-          </Button>
-        </Col>
-        <Col xs={6}>
-          <div className="image-container">
-            <h4>{currentFolder.name}</h4>
-            {hasImages ? (
-              <>
-                <img
-                  src={`http://localhost:5004${currentImage}`}
-                  alt="Current"
-                  style={{ width: "100%", maxHeight: "300px" }}
-                />
-                <p>{currentImage.split("/").pop()}</p>
-              </>
-            ) : (
-              <p>No images available in this folder</p>
-            )}
+            ↑
           </div>
-        </Col>
-        <Col xs={3}>
-          <Button
-            variant="primary"
+
+          {/* Next Folder (↓) */}
+          <div
             onClick={handleNextFolder}
-            disabled={currentFolderIndex === folders.length - 1}
+            style={{
+              position: "absolute",
+              bottom: "10px",
+              left: "50%",
+              transform: "translateX(-50%)",
+              cursor: "pointer",
+              color: "#333",
+              fontSize: "24px",
+              fontWeight: "bold",
+              userSelect: "none",
+            }}
           >
-            ↓ Next Folder
-          </Button>
-        </Col>
-      </Row>
-      <Row className="mt-3">
-        {hasImages && (
-          <>
-            <Col xs={6}>
-              <Button
-                variant="secondary"
-                onClick={handlePreviousImage}
-                disabled={currentImageIndex === 0}
-              >
-                ← Previous Image
-              </Button>
-            </Col>
-            <Col xs={6}>
-              <Button
-                variant="secondary"
-                onClick={handleNextImage}
-                disabled={currentImageIndex === currentFolder.images.length - 1}
-              >
-                Next Image →
-              </Button>
-            </Col>
-          </>
-        )}
-      </Row>
+            ↓
+          </div>
+
+          {/* Previous Image (←) */}
+          <div
+            onClick={handlePreviousImage}
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "10px",
+              transform: "translateY(-50%)",
+              cursor: "pointer",
+              color: "#333",
+              fontSize: "24px",
+              fontWeight: "bold",
+              userSelect: "none",
+            }}
+          >
+            ←
+          </div>
+
+          {/* Next Image (→) */}
+          <div
+            onClick={handleNextImage}
+            style={{
+              position: "absolute",
+              top: "50%",
+              right: "10px",
+              transform: "translateY(-50%)",
+              cursor: "pointer",
+              color: "#333",
+              fontSize: "24px",
+              fontWeight: "bold",
+              userSelect: "none",
+            }}
+          >
+            →
+          </div>
+
+          {/* Image or Placeholder */}
+          {folders.length > 0 && currentFolder.images?.length ? (
+            <img
+              src={`http://localhost:5004${currentImage}`}
+              alt="Current"
+              style={{
+                maxWidth: "100%",
+                maxHeight: "100%",
+                objectFit: "contain",
+              }}
+            />
+          ) : (
+            <p style={{ color: "#777" }}>No image available</p>
+          )}
+        </div>
+      )}
     </Container>
   );
 };
